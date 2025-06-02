@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChainVertex: TradFi Meets Institutional DeFi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.4;
+            overflow-x: hidden;
+            background: #000000;
+        }
+
+        /* Professional Color Scheme Selector */
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #333;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 240px;
+        }
+
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-option.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+        }
+
+        /* High Contrast Professional Themes */
+        .theme-option.dark-blue { background: linear-gradient(45deg, #0052CC, #003d99); }
+        .theme-option.dark-green { background: linear-gradient(45deg, #0B6623, #004d1a); }
+        .theme-option.dark-purple { background: linear-gradient(45deg, #4A148C, #2E0854); }
+        .theme-option.clean-white { background: linear-gradient(45deg, #FFFFFF, #F5F5F5); border-color: #333; }
+        .theme-option.corporate-red { background: linear-gradient(45deg, #C62828, #8B0000); }
+        .theme-option.financial-navy { background: linear-gradient(45deg, #1A237E, #0D1421); }
+        .theme-option.tech-black { background: linear-gradient(45deg, #000000, #1A1A1A); }
+        .theme-option.minimal-gray { background: linear-gradient(45deg, #2C2C2C, #1A1A1A); }
+
+        /* Professional Color Variables */
+        :root {
+            --primary-bg: #000000;
+            --secondary-bg: #0D1421;
+            --accent-bg: #1A237E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #E3F2FD;
+            --text-accent: #64B5F6;
+            --border-color: #2196F3;
+            --highlight-color: #00E676;
+            --warning-color: #FF5722;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #1A237E 0%, #0D1421 100%);
+            --gradient-accent: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+
+        /* Dark Blue Professional Theme */
+        .dark-blue {
+            --primary-bg: #000000;
+            --secondary-bg: #0D1421;
+            --accent-bg: #1A237E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #E3F2FD;
+            --text-accent: #64B5F6;
+            --border-color: #2196F3;
+            --highlight-color: #00E676;
+            --warning-color: #FF5722;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #1A237E 0%, #0D1421 100%);
+            --gradient-accent: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+
+        /* Dark Green Corporate Theme */
+        .dark-green {
+            --primary-bg: #000000;
+            --secondary-bg: #0B2818;
+            --accent-bg: #0B6623;
+            --text-primary: #FFFFFF;
+            --text-secondary: #E8F5E8;
+            --text-accent: #81C784;
+            --border-color: #4CAF50;
+            --highlight-color: #00E676;
+            --warning-color: #FF9800;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #0B6623 0%, #0B2818 100%);
+            --gradient-accent: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+        }
+
+        /* Dark Purple Executive Theme */
+        .dark-purple {
+            --primary-bg: #000000;
+            --secondary-bg: #1A0933;
+            --accent-bg: #4A148C;
+            --text-primary: #FFFFFF;
+            --text-secondary: #F3E5F5;
+            --text-accent: #BA68C8;
+            --border-color: #9C27B0;
+            --highlight-color: #E91E63;
+            --warning-color: #FF5722;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #4A148C 0%, #1A0933 100%);
+            --gradient-accent: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+        }
+
+        /* Clean White Professional Theme */
+        .clean-white {
+            --primary-bg: #FFFFFF;
+            --secondary-bg: #F8F9FA;
+            --accent-bg: #1976D2;
+            --text-primary: #000000;
+            --text-secondary: #424242;
+            --text-accent: #1976D2;
+            --border-color: #1976D2;
+            --highlight-color: #4CAF50;
+            --warning-color: #F44336;
+            --card-bg: #FFFFFF;
+            --gradient-primary: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+            --gradient-accent: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+
+        /* Corporate Red Theme */
+        .corporate-red {
+            --primary-bg: #000000;
+            --secondary-bg: #1A0B0B;
+            --accent-bg: #C62828;
+            --text-primary: #FFFFFF;
+            --text-secondary: #FFEBEE;
+            --text-accent: #EF5350;
+            --border-color: #F44336;
+            --highlight-color: #4CAF50;
+            --warning-color: #FF9800;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #C62828 0%, #1A0B0B 100%);
+            --gradient-accent: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+        }
+
+        /* Financial Navy Theme */
+        .financial-navy {
+            --primary-bg: #000000;
+            --secondary-bg: #0A1929;
+            --accent-bg: #1A237E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #E1F5FE;
+            --text-accent: #29B6F6;
+            --border-color: #03A9F4;
+            --highlight-color: #00E676;
+            --warning-color: #FF5722;
+            --card-bg: #121212;
+            --gradient-primary: linear-gradient(135deg, #1A237E 0%, #0A1929 100%);
+            --gradient-accent: linear-gradient(135deg, #03A9F4 0%, #0288D1 100%);
+        }
+
+        /* Tech Black Theme */
+        .tech-black {
+            --primary-bg: #000000;
+            --secondary-bg: #121212;
+            --accent-bg: #1E1E1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0BEC5;
+            --text-accent: #00E676;
+            --border-color: #00E676;
+            --highlight-color: #00E676;
+            --warning-color: #FF5722;
+            --card-bg: #1A1A1A;
+            --gradient-primary: linear-gradient(135deg, #1E1E1E 0%, #121212 100%);
+            --gradient-accent: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+        }
+
+        /* Minimal Gray Theme */
+        .minimal-gray {
+            --primary-bg: #212121;
+            --secondary-bg: #303030;
+            --accent-bg: #424242;
+            --text-primary: #FFFFFF;
+            --text-secondary: #BDBDBD;
+            --text-accent: #81C784;
+            --border-color: #616161;
+            --highlight-color: #4CAF50;
+            --warning-color: #FF7043;
+            --card-bg: #2C2C2C;
+            --gradient-primary: linear-gradient(135deg, #424242 0%, #303030 100%);
+            --gradient-accent: linear-gradient(135deg, #616161 0%, #424242 100%);
+        }
+
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 60px;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            position: relative;
+            page-break-after: always;
+            border-bottom: 3px solid var(--border-color);
+        }
+
+        .slide-secondary {
+            background: var(--secondary-bg);
+        }
+
+        .slide-accent {
+            background: var(--gradient-primary);
+        }
+
+        .slide-highlight {
+            background: var(--gradient-accent);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .slide-header {
+            position: absolute;
+            top: 30px;
+            right: 60px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            z-index: 10;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .xdc-logo {
+            width: 140px;
+            height: 50px;
+            background: linear-gradient(45deg, #00D4AA, #0052FF);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            font-size: 22px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(0, 212, 170, 0.4);
+        }
+
+        .mina-logo {
+            width: 120px;
+            height: 50px;
+            background: linear-gradient(45deg, #FF6B35, #F7931E);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .slide-number {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 18px;
+            border: 3px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 7rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -4px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 4.5rem;
+            margin-bottom: 3rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-align: center;
+            position: relative;
+            letter-spacing: -2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 6px;
+            background: var(--gradient-accent);
+            border-radius: 3px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            font-size: 2.8rem;
+            color: var(--text-accent);
+            margin-bottom: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .hero-tagline {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--text-primary);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 30px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .badge {
+            background: var(--card-bg);
+            color: var(--text-accent);
+            padding: 25px 40px;
+            border-radius: 50px;
+            font-weight: 900;
+            border: 3px solid var(--border-color);
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .badge:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            background: var(--border-color);
+            color: var(--primary-bg);
+        }
+
+        .highlight-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 3px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            margin: 50px 0;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .standards-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .standard-item {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .standard-item:hover {
+            background: var(--border-color);
+            color: var(--primary-bg);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin: 60px 0;
+        }
+
+        .market-card {
+            background: var(--card-bg);
+            border: 4px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+        }
+
+        .market-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+            border-color: var(--highlight-color);
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--secondary-bg) 100%);
+        }
+
+        .market-value {
+            font-size: 6rem;
+            font-weight: 900;
+            color: var(--text-accent);
+            display: block;
+            margin-bottom: 25px;
+            letter-spacing: -4px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .market-label {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 35px;
+            margin: 60px 0;
+        }
+
+        .problem-item {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #B71C1C 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .problem-item::before {
+            content: '⚠️';
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 4rem;
+            opacity: 0.9;
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 35px;
+            margin: 60px 0;
+        }
+
+        .solution-item {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .solution-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+        }
+
+        .solution-item::before {
+            content: '✅';
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 4rem;
+            opacity: 0.9;
+        }
+
+        .founder-section {
+            background: var(--card-bg);
+            border: 4px solid var(--border-color);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 60px 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+        }
+
+        .founder-profile {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin: 40px 0;
+        }
+
+        .founder-avatar {
+            width: 200px;
+            height: 200px;
+            background: var(--gradient-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            font-weight: 900;
+            color: white;
+            border: 6px solid var(--border-color);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .founder-info h4 {
+            color: var(--text-accent);
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            font-weight: 900;
+        }
+
+        .cta-section {
+            text-align: center;
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button {
+            background: var(--card-bg);
+            color: var(--text-accent);
+            padding: 30px 70px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 1.6rem;
+            display: inline-block;
+            margin: 25px 20px;
+            transition: all 0.4s ease;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.5px;
+            border: 4px solid var(--border-color);
+            backdrop-filter: blur(20px);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+            background: var(--border-color);
+            color: var(--primary-bg);
+        }
+
+        .stats-highlight {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 4px solid var(--border-color);
+            border-radius: 25px;
+            padding: 50px;
+            margin: 50px 0;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 2.2rem;
+            text-align: center;
+            margin: 60px 0;
+            padding: 60px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border-left: 10px solid var(--border-color);
+            font-weight: 700;
+            line-height: 1.5;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .clean-white .quote {
+            background: var(--secondary-bg);
+            border-left-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-accent);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 40px 30px; }
+            h1 { font-size: 4rem; }
+            h2 { font-size: 3rem; }
+            .market-grid { grid-template-columns: 1fr; }
+            .problem-grid { grid-template-columns: 1fr; }
+            .solution-grid { grid-template-columns: 1fr; }
+            .founder-profile { flex-direction: column; text-align: center; }
+            .theme-selector { 
+                position: relative; 
+                margin: 20px auto; 
+                justify-content: center;
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 200px;
+            }
+            .slide-header {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 30px;
+                justify-content: center;
+            }
+        }
+
+        .highlight {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
+        }
+    </style>
+    <script>
+        function changeTheme(theme) {
+            document.body.className = '';
+            document.body.classList.add(theme);
+            
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`.theme-option.${theme}`).classList.add('active');
+            
+            localStorage.setItem('selectedTheme', theme);
+        }
+        
+        function updateProgressBar() {
+            const slides = document.querySelectorAll('.slide');
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = scrollPercent + '%';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'dark-blue';
+            changeTheme(savedTheme);
+            
+            // Add progress bar
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', updateProgressBar);
+            updateProgressBar();
+        });
+    </script>
+</head>
+<body class="dark-blue">
+    <!-- Professional Theme Selector -->
+    <div class="theme-selector">
+        <div class="theme-option dark-blue" onclick="changeTheme('dark-blue')" title="Professional Blue"></div>
+        <div class="theme-option dark-green" onclick="changeTheme('dark-green')" title="Corporate Green"></div>
+        <div class="theme-option dark-purple" onclick="changeTheme('dark-purple')" title="Executive Purple"></div>
+        <div class="theme-option clean-white" onclick="changeTheme('clean-white')" title="Clean White"></div>
+        <div class="theme-option corporate-red" onclick="changeTheme('corporate-red')" title="Corporate Red"></div>
+        <div class="theme-option financial-navy" onclick="changeTheme('financial-navy')" title="Financial Navy"></div>
+        <div class="theme-option tech-black" onclick="changeTheme('tech-black')" title="Tech Black"></div>
+        <div class="theme-option minimal-gray" onclick="changeTheme('minimal-gray')" title="Minimal Gray"></div>
+    </div>
+
+    <!-- Slide 1: Hero -->
+    <div class="slide slide-accent">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">1/12</div>
+        </div>
+        <div class="container">
+            <h1>ChainVertex</h1>
+            <p class="hero-tagline">Where TradFi Meets Institutional DeFi<br><span class="highlight">Standards-Based RWA Tokenization Engine</span></p>
+            <div class="hero-badges">
+                <span class="badge">ZK-PRET Engine</span>
+                <span class="badge">Multi-Financier DeFi</span>
+                <span class="badge">MIT NANDA Registry</span>
+                <span class="badge">Standards Integration</span>
+                <span class="badge">$53T Market</span>
+            </div>
+            
+            <div class="highlight-card">
+                <h3 style="margin-bottom: 30px; color: var(--text-accent);">🌐 The First Standards-Compliant RWA Tokenization Platform</h3>
+                <p style="font-size: 2rem; font-weight: 700; line-height: 1.4;">
+                    "Unlocking the <span class="highlight">$53 Trillion Global MSME Economy</span> through Zero-Knowledge Composable Proofs and Multi-Financier Supply Chain Integration"
+                </p>
+            </div>
+            
+            <div class="standards-showcase">
+                <div class="standard-item">ACTUS<br><small>Financial Standards</small></div>
+                <div class="standard-item">GLEIF<br><small>Legal Entity ID</small></div>
+                <div class="standard-item">DCSA<br><small>Shipping Standards</small></div>
+                <div class="standard-item">BPMN<br><small>Process Modeling</small></div>
+                <div class="standard-item">MLETR<br><small>Electronic Records</small></div>
+                <div class="standard-item">ISO 20022<br><small>Financial Messaging</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Market Context & TAM/SAM/SOM -->
+    <div class="slide slide-secondary">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">2/12</div>
+        </div>
+        <div class="container">
+            <h2>Massive Market Opportunity: Validated TAM/SAM/SOM Analysis</h2>
+            <div class="market-grid">
+                <div class="market-card">
+                    <span class="market-value">$53T</span>
+                    <div class="market-label"><strong>TAM:</strong> Global MSME Economy<br>(50% of $106T global GDP)</div>
+                </div>
+                <div class="market-card">
+                    <span class="market-value">$8.4T</span>
+                    <div class="market-label"><strong>SAM:</strong> MSME Finance Gap<br>(IFC: $5.2T + informal enterprises)</div>
+                </div>
+                <div class="market-card">
+                    <span class="market-value">$840B</span>
+                    <div class="market-label"><strong>SOM:</strong> Initial 10% Market Capture<br>(Standards-compliant segment)</div>
+                </div>
+                <div class="market-card">
+                    <span class="market-value">90%</span>
+                    <div class="market-label"><strong>Global Businesses</strong> (MSMEs)<br>322M formal enterprises</div>
+                </div>
+                <div class="market-card">
+                    <span class="market-value">70%</span>
+                    <div class="market-label"><strong>Global Private Employment</strong><br>600M jobs needed by 2030</div>
+                </div>
+                <div class="market-card">
+                    <span class="market-value">0%</span>
+                    <div class="market-label"><strong>Standards-Compliant RWA Platforms</strong><br>Massive blue ocean opportunity</div>
+                </div>
+            </div>
+            
+            <div class="stats-highlight">
+                <h3>🎯 Market Validation: The $53 Trillion MSME Economy</h3>
+                <p style="font-size: 1.6rem; line-height: 1.7; font-weight: 600;"><strong>World Bank Data:</strong> MSMEs represent 90% of businesses and 50% of global GDP ($106T in 2023). <strong>IFC Analysis:</strong> $5.2T financing gap for formal MSMEs alone, with additional trillions in informal enterprise needs. <strong>Critical Gap:</strong> Zero standards-compliant RWA tokenization platforms exist, creating unprecedented first-mover advantage.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: The Standards Crisis -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">3/12</div>
+        </div>
+        <div class="container">
+            <h2>The Standards Crisis: Why RWA Tokenization Fails</h2>
+            <div class="problem-grid">
+                <div class="problem-item">
+                    <h3>No ACTUS Financial Standards</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Central banks use ACTUS for financial modeling, but <strong>zero RWA platforms support it</strong>. This prevents institutional adoption and regulatory acceptance of tokenized financial instruments.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>Missing GLEIF Identity Integration</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Global Legal Entity Identifier system is mandatory for institutional finance, yet <strong>no tokenization platform integrates vLEI</strong>. This creates compliance nightmares.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>No DCSA Shipping Compliance</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Digital Container Shipping Association standards govern $14T in global trade, but <strong>Bills of Lading tokenization ignores DCSA schemas</strong>. This blocks trade finance adoption.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>Absent BPMN Process Validation</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Business Process Model Notation is the global standard for workflow verification, yet <strong>no platform can prove business process execution</strong> for delivery vs promise validation.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>MLETR Non-Compliance</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Model Law for Electronic Transmission of Records governs digital trade documents, but <strong>current platforms use simple hashes</strong> instead of full MLETR compliance.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>ISO 20022 Messaging Gap</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;">Financial messaging standard adopted by central banks globally, but <strong>RWA platforms cannot integrate with existing banking infrastructure</strong> due to messaging incompatibility.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: ChainVertex Standards Solution -->
+    <div class="slide slide-highlight">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">4/12</div>
+        </div>
+        <div class="container">
+            <h2>ChainVertex: Bringing Standards to RWA Tokenization</h2>
+            <div class="solution-grid">
+                <div class="solution-item">
+                    <h3>Native ACTUS Financial Modeling</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>First platform with central bank-grade financial standards.</strong> Enable institutional risk modeling, automated cash flow analysis, and regulatory-compliant financial instrument tokenization.</p>
+                </div>
+                <div class="solution-item">
+                    <h3>GLEIF vLEI Identity Layer</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>Complete Legal Entity Identifier integration.</strong> Automated organizational identity verification, corporate structure validation, and global KYC/AML compliance for institutional DeFi.</p>
+                </div>
+                <div class="solution-item">
+                    <h3>DCSA-Compliant Bill of Lading</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>Full Digital Container Shipping Association schema support.</strong> Standards-compliant maritime document tokenization enabling $14T global trade finance integration.</p>
+                </div>
+                <div class="solution-item">
+                    <h3>BPMN Business Process Proofs</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>Automated workflow validation using global standards.</strong> Cryptographic proof of business process execution, delivery vs promise verification, and SLA compliance automation.</p>
+                </div>
+                <div class="solution-item">
+                    <h3>MLETR Electronic Records</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>Model Law compliance for digital trade documents.</strong> Beyond simple hashing - full provenance, inter-document integrity, and legal framework compliance for institutional adoption.</p>
+                </div>
+                <div class="solution-item">
+                    <h3>ISO 20022 Integration</h3>
+                    <p style="font-size: 1.4rem; line-height: 1.6; font-weight: 600;"><strong>Seamless central bank and SWIFT integration.</strong> Native financial messaging compatibility enabling direct integration with existing banking infrastructure and CBDC systems.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Founder & Standards Leadership -->
+    <div class="slide slide-secondary">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">5/12</div>
+        </div>
+        <div class="container">
+            <h2>Standards Leadership: Industry Workgroup Expertise</h2>
+            
+            <div class="founder-section">
+                <div class="founder-profile">
+                    <div class="founder-avatar">S</div>
+                    <div class="founder-info">
+                        <h4>Sathya - Founder & Chief Technology Officer</h4>
+                        <p style="font-size: 1.6rem; line-height: 1.7; margin-bottom: 25px; color: var(--text-primary); font-weight: 600;">
+                            <strong>🏆 Emerging Tech Expert:</strong> 15+ years in Supply Chain and Payment Innovation & Integrity<br>
+                            <strong>🏢 Standards Leadership:</strong> Active member in ACTUS, GLEIF, DCSA, and BPMN working groups<br>
+                            <strong>🌐 Global Standards Integration:</strong> Leading voice in bringing traditional standards to blockchain<br>
+                            <strong>🔐 ZK-PRET Architecture:</strong> Pioneer in zero-knowledge composable proof systems<br>
+                            <strong>🚀 Ecosystem Builder:</strong> Early contributor to XDC Network and MINA Protocol development
+                        </p>
+                        <div class="highlight-card">
+                            <strong style="color: var(--text-accent); font-size: 1.4rem;">Academic Recognition & Industry Standards Involvement:</strong><br>
+                            <div style="margin-top: 20px; font-size: 1.2rem; line-height: 1.6; font-weight: 600;">
+                                • <strong>MIT NANDA Registry:</strong> ChainAim AI Agents officially registered in MIT's Network Agent Development & Application registry<br>
+                                • ACTUS Financial Research Foundation - Technical Committee Member<br>
+                                • GLEIF Legal Entity Identifier Working Group - Standards Contributor<br>
+                                • DCSA Digital Standards Initiative - Supply Chain Integration Lead<br>
+                                • BPMN Process Modeling - Blockchain Integration Specialist<br>
+                                • ISO 20022 Advisory - DeFi Integration Expert
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Call to Action -->
+    <div class="slide cta-section">
+        <div class="slide-header">
+            <div class="logo-group">
+                <div class="xdc-logo">XDC</div>
+                <div class="mina-logo">MINA</div>
+            </div>
+            <div class="slide-number">12/12</div>
+        </div>
+        <div class="container">
+            <h2>The Standards-Based RWA Revolution Starts Now</h2>
+            
+            <div class="quote">
+                "ChainVertex represents the first convergence of global financial standards with institutional DeFi. 
+                The window for standards-compliant first-mover advantage in the $53T MSME economy is closing rapidly."
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 50px; margin: 80px 0;">
+                <div class="stats-highlight">
+                    <h3>🚀 For Investors</h3>
+                    <p style="font-size: 1.5rem; line-height: 1.6; font-weight: 600;"><strong>$3M Seed Round</strong><br>
+                    Pre-revenue valuation: $25M<br>
+                    100-500x return potential<br>
+                    Lead investors: XDC Foundation, MINA Foundation</p>
+                </div>
+                <div class="stats-highlight">
+                    <h3>🏦 For Enterprises</h3>
+                    <p style="font-size: 1.5rem; line-height: 1.6; font-weight: 600;"><strong>Standards Compliance Pilot</strong><br>
+                    Free ACTUS + GLEIF integration<br>
+                    $500K+ compliance savings<br>
+                    48-hour multi-financier onboarding</p>
+                </div>
+                <div class="stats-highlight">
+                    <h3>🤝 For Standards Bodies</h3>
+                    <p style="font-size: 1.5rem; line-height: 1.6; font-weight: 600;"><strong>Blockchain Integration Partnership</strong><br>
+                    Reference implementation support<br>
+                    Joint standards development<br>
+                    Technical working group participation</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 60px 0;">
+                <a href="mailto:sathya@chainvertex.com" class="cta-button">Schedule Standards Demo</a>
+                <a href="#investment" class="cta-button">Investment Deck</a>
+                <a href="#technical" class="cta-button">Standards Integration Docs</a>
+            </div>
+
+            <div class="stats-highlight" style="margin-top: 80px;">
+                <h3 style="margin-bottom: 30px;">Contact Information</h3>
+                <div style="text-align: center;">
+                    <p style="font-size: 1.8rem; margin: 25px 0; font-weight: 700;">
+                        <strong>Sathya - Founder & CTO</strong><br>
+                        📧 sathya@chainvertex.com<br>
+                        💼 linkedin.com/in/sathya-chainvertex<br>
+                        🐦 @ChainVertexStandards<br>
+                        🌐 chainvertex.com
+                    </p>
+                    <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid var(--border-color);">
+                        <p style="font-size: 1.4rem; font-weight: 700;">
+                            <strong>Built on XDC Network | Powered by MINA ZK Proofs | Standards-Compliant RWA Tokenization</strong>
+                        </p>
+                        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 25px; flex-wrap: wrap; font-size: 1.2rem; font-weight: 700;">
+                            <span>MIT NANDA Registry: ChainAim AI Agents</span>
+                            <span>GitHub: chainaimlabs/ZK-PRET-RWA-SCF</span>
+                            <span>MINA Navigator Grant</span>
+                            <span>XDC RWAi Winner</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
